@@ -1,6 +1,8 @@
 # Adapted from https://stackoverflow.com/questions/37317140/cutting-out-a-portion-of-video-python
+
 import os
 from moviepy.editor import VideoFileClip
+from multiprocessing import Pool, cpu_count
 
 try:
     os.mkdir("converted")
@@ -20,8 +22,7 @@ full_duration = clip.duration
 amount_of_files = int(full_duration/split_every_secs)
 
 # initial positions
-start_pos = 0
-end_pos = split_every_secs
+
 
 # for testing..
 # print(f"""
@@ -30,9 +31,15 @@ end_pos = split_every_secs
 # """)
 
 
-for i in range(1,amount_of_files+1):
+def functionx(x):
+    end_pos = x * 30
+    start_pos = end_pos-30
     subclip = clip.subclip(start_pos, end_pos)
-    subclip.write_videofile(f"converted/clip_{i}.mp4")
+    subclip.write_videofile(f"converted/clip_{x}.mp4")
 
-    start_pos = end_pos
-    end_pos = start_pos+split_every_secs
+if __name__ == '__main__':
+    with Pool(cpu_count()) as p:
+        count = set()
+        for i in range(1, amount_of_files + 1):
+            count.add(i)
+        print(p.map(functionx,count))
